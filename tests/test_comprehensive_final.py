@@ -80,8 +80,8 @@ class TestTrendSenseComprehensive(unittest.TestCase):
         try:
             from src.database.adapters import get_database_adapter
 
-            # Test mock Firebase adapter
-            adapter = get_database_adapter('mock_firebase')
+            # Test MongoDB adapter
+            adapter = get_database_adapter('mongodb')
             self.assertIsNotNone(adapter)
             self.assertTrue(adapter.connect())
             self.assertTrue(adapter.is_connected())

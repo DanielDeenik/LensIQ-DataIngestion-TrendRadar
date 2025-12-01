@@ -1,8 +1,8 @@
 """
-API Routes for TrendSense
+API Routes for LensIQ
 
-This module provides API endpoints for the TrendSense application.
-These endpoints serve data from the Firebase database and provide AI-generated insights.
+This module provides API endpoints for the LensIQ application.
+These endpoints serve data from the MongoDB database and provide AI-generated insights.
 """
 
 import logging

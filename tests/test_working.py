@@ -28,16 +28,16 @@ class TestTrendSenseWorking(unittest.TestCase):
             from app import create_app
             app = create_app()
             app.config['TESTING'] = True
-            
+
             with app.test_client() as client:
                 # Test home page
                 response = client.get('/')
                 self.assertIn(response.status_code, [200, 404, 500])
-                
+
                 # Test health check if API is registered
                 response = client.get('/api/health')
                 self.assertIn(response.status_code, [200, 404])
-                
+
         except Exception as e:
             self.fail(f"Basic routes test failed: {e}")
 
@@ -45,7 +45,7 @@ class TestTrendSenseWorking(unittest.TestCase):
         """Test database adapters work."""
         try:
             from src.database.adapters import get_database_adapter
-            adapter = get_database_adapter('mock_firebase')
+            adapter = get_database_adapter('mongodb')
             self.assertIsNotNone(adapter)
         except ImportError:
             # This is expected if modules don't exist yet
@@ -57,8 +57,8 @@ if __name__ == '__main__':
     # Set up environment for testing
     os.environ.update({
         'FLASK_ENV': 'testing',
-        'DATABASE_ADAPTER': 'mock_firebase',
+        'DATABASE_ADAPTER': 'mongodb',
         'TESTING': 'True'
     })
-    
+
     unittest.main(verbosity=2)

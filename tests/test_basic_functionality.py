@@ -34,7 +34,7 @@ class TestBasicFunctionality(unittest.TestCase):
         """Test that database adapters can be imported."""
         try:
             from src.database.adapters import get_database_adapter
-            adapter = get_database_adapter('mock_firebase')
+            adapter = get_database_adapter('mongodb')
             self.assertIsNotNone(adapter)
         except ImportError as e:
             self.fail(f"Failed to import database adapters: {e}")
@@ -52,16 +52,16 @@ class TestBasicFunctionality(unittest.TestCase):
         try:
             from app import app
             app.config['TESTING'] = True
-            
+
             with app.test_client() as client:
                 # Test health check
                 response = client.get('/api/health')
                 self.assertEqual(response.status_code, 200)
-                
+
                 # Test home page
                 response = client.get('/')
                 self.assertIn(response.status_code, [200, 500])  # Allow 500 for template issues
-                
+
         except Exception as e:
             self.fail(f"Basic app functionality test failed: {e}")
 
@@ -87,8 +87,8 @@ if __name__ == '__main__':
     # Set up environment for testing
     os.environ.update({
         'FLASK_ENV': 'testing',
-        'DATABASE_ADAPTER': 'mock_firebase',
+        'DATABASE_ADAPTER': 'mongodb',
         'TESTING': 'True'
     })
-    
+
     unittest.main(verbosity=2)

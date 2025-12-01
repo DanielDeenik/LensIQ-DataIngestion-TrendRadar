@@ -1,22 +1,22 @@
 """
 Database Service Module
 
-This module provides a unified database service for TrendSense.
+This module provides a unified database service for LensIQ.
 It uses the adapter pattern to support multiple database backends.
 """
 
-import os
 import logging
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 
-from .adapters import get_database_adapter, DatabaseAdapter
+from .adapters import get_database_adapter
+from ..config.production_config import get_config
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
 
 class DatabaseService:
-    """Database service for TrendSense."""
+    """Database service for LensIQ."""
 
     _instance = None
 
@@ -32,11 +32,20 @@ class DatabaseService:
         if self._initialized:
             return
 
-        # Get adapter type from environment
-        adapter_type = os.getenv('DATABASE_ADAPTER', 'firebase').lower()
+        # Get configuration
+        config = get_config()
 
-        # Create adapter
-        self._adapter = get_database_adapter(adapter_type)
+        # Get adapter type from configuration
+        adapter_type = config.database.adapter.lower()
+
+        # Create adapter with configuration
+        self._adapter = get_database_adapter(
+            adapter_type,
+            uri=config.database.uri,
+            db_name=config.database.name,
+            username=config.database.username,
+            password=config.database.password
+        )
 
         # Connect to database
         self._connect()

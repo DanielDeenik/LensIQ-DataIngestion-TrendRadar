@@ -19,11 +19,11 @@ TrendSense™ is a web-based platform that provides tools and insights for susta
 DataVista/
 ├── app.py                  # Main application entry point
 ├── data/                   # Data files
-├── firebase/               # Firebase configuration
+
 ├── logs/                   # Application logs
 ├── src/                    # Source code
 │   ├── database/           # Database adapters and services
-│   │   ├── adapters/       # Database adapters (Firebase, MongoDB)
+│   │   ├── adapters/       # Database adapters (MongoDB)
 │   │   └── ...
 │   ├── data_management/    # Data management modules
 │   ├── frontend/           # Frontend code
@@ -51,10 +51,8 @@ DataVista/
 
 The application supports multiple database backends:
 
-- **Firebase**: Set `DATABASE_ADAPTER=firebase` in `.env`
 - **MongoDB**: Set `DATABASE_ADAPTER=mongodb` in `.env`
-- **Mock Firebase**: Set `DATABASE_ADAPTER=mock_firebase` in `.env` (for development)
-- **Dual Adapter**: Set `DATABASE_ADAPTER=dual` in `.env` (writes to both Firebase and MongoDB)
+- **Dual Adapter**: Set `DATABASE_ADAPTER=dual` in `.env` (writes to multiple MongoDB instances)
 
 ## Running Tests
 

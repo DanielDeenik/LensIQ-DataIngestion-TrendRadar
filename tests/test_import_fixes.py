@@ -118,7 +118,7 @@ class TestImportFixes(unittest.TestCase):
         """Test that database adapters can be imported."""
         try:
             from src.database.adapters import get_database_adapter
-            adapter = get_database_adapter('mock_firebase')
+            adapter = get_database_adapter('mongodb')
             self.assertIsNotNone(adapter)
         except ImportError as e:
             self.fail(f"Failed to import database adapters: {e}")
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     # Set up environment for testing
     os.environ.update({
         'FLASK_ENV': 'testing',
-        'DATABASE_ADAPTER': 'mock_firebase',
+        'DATABASE_ADAPTER': 'mongodb',
         'TESTING': 'True'
     })
 

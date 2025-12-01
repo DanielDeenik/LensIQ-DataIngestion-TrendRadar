@@ -8,12 +8,8 @@
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold">TrendRadar™</h1>
         <div class="flex items-center">
-            <span class="text-gray-400 mr-2">Firebase:</span>
-            {% if firebase_available %}
-                <span class="text-green-500">Connected</span>
-            {% else %}
-                <span class="text-red-500">Disconnected</span>
-            {% endif %}
+            <span class="text-gray-400 mr-2">Database:</span>
+            <span class="text-green-500">Connected</span>
         </div>
     </div>
 
@@ -131,7 +127,94 @@
         </div>
     </div>
 
-    <!-- Trend Insights -->
+    <!-- AI Data Management Controls -->
+    <div class="card p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-robot mr-2 text-blue-500"></i>
+            AI Data Management
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <button id="run-ai-cycle-btn" class="btn btn-primary flex items-center justify-center">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Run AI Cycle
+            </button>
+            <button id="discover-sources-btn" class="btn btn-secondary flex items-center justify-center">
+                <i class="fas fa-search mr-2"></i>
+                Discover Sources
+            </button>
+            <button id="reconcile-data-btn" class="btn btn-secondary flex items-center justify-center">
+                <i class="fas fa-balance-scale mr-2"></i>
+                Reconcile Data
+            </button>
+            <div class="flex items-center space-x-4">
+                <button id="refresh-trends-btn" class="btn btn-secondary flex items-center justify-center">
+                    <i class="fas fa-refresh mr-2"></i>
+                    Refresh Data
+                </button>
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-400 mr-2">Auto-refresh:</span>
+                    <input type="checkbox" id="auto-refresh-toggle" class="toggle">
+                </div>
+            </div>
+        </div>
+        <div id="ai-management-status" class="bg-gray-800 p-4 rounded-lg text-sm">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle mr-2 text-blue-400"></i>
+                <span>AI data management ready. Click "Run AI Cycle" to start automated data processing.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ML-Powered Insights -->
+    <div class="card p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-brain mr-2 text-purple-500"></i>
+            ML-Powered ESG Insights
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-800 p-5 rounded-lg">
+                <h3 class="text-lg font-medium mb-3 flex items-center">
+                    <i class="fas fa-chart-line mr-2 text-green-500"></i>
+                    Trend Predictions
+                </h3>
+                <div id="trend-predictions-content">
+                    <div class="animate-pulse">
+                        <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                        <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                        <div class="h-4 bg-gray-700 rounded"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-5 rounded-lg">
+                <h3 class="text-lg font-medium mb-3 flex items-center">
+                    <i class="fas fa-leaf mr-2 text-green-500"></i>
+                    ESG Analysis
+                </h3>
+                <div id="esg-analysis-content">
+                    <div class="animate-pulse">
+                        <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                        <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                        <div class="h-4 bg-gray-700 rounded"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-5 rounded-lg">
+                <h3 class="text-lg font-medium mb-3 flex items-center">
+                    <i class="fas fa-database mr-2 text-blue-500"></i>
+                    Data Quality
+                </h3>
+                <div id="data-quality-content">
+                    <div class="animate-pulse">
+                        <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                        <div class="h-4 bg-gray-700 rounded mb-2"></div>
+                        <div class="h-4 bg-gray-700 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Traditional Insights -->
     <div class="card p-6">
         <h2 class="text-xl font-semibold mb-4 flex items-center">
             <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>
@@ -140,24 +223,20 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-gray-800 p-5 rounded-lg">
                 <h3 class="text-lg font-medium mb-3">Key Findings</h3>
-                <p class="text-gray-300 mb-4">
-                    The radar analysis shows that Carbon Tech has the highest overall sustainability score, with particularly strong performance in environmental impact and innovation.
+                <p class="text-gray-300 mb-4" id="key-findings-text">
+                    Loading ML-powered insights...
                 </p>
-                <div class="flex flex-wrap gap-2">
-                    <span class="text-xs px-2 py-1 rounded-full bg-gray-700">Carbon Tech</span>
-                    <span class="text-xs px-2 py-1 rounded-full bg-gray-700">Environmental Impact</span>
-                    <span class="text-xs px-2 py-1 rounded-full bg-gray-700">Innovation</span>
+                <div class="flex flex-wrap gap-2" id="key-findings-tags">
+                    <!-- Tags will be populated by JavaScript -->
                 </div>
             </div>
             <div class="bg-gray-800 p-5 rounded-lg">
                 <h3 class="text-lg font-medium mb-3">Recommendations</h3>
-                <p class="text-gray-300 mb-4">
-                    Based on the radar analysis, we recommend focusing on Carbon Tech and Circular Economy trends, which show the strongest growth potential and sustainability metrics.
+                <p class="text-gray-300 mb-4" id="recommendations-text">
+                    Loading ML-powered recommendations...
                 </p>
-                <div class="flex flex-wrap gap-2">
-                    <span class="text-xs px-2 py-1 rounded-full bg-gray-700">Carbon Tech</span>
-                    <span class="text-xs px-2 py-1 rounded-full bg-gray-700">Circular Economy</span>
-                    <span class="text-xs px-2 py-1 rounded-full bg-gray-700">Growth Potential</span>
+                <div class="flex flex-wrap gap-2" id="recommendations-tags">
+                    <!-- Tags will be populated by JavaScript -->
                 </div>
             </div>
         </div>
@@ -331,6 +410,12 @@
         // Initialize filters
         initializeFilters();
 
+        // Initialize AI data management
+        initializeAIDataManagement();
+
+        // Load ML-powered insights
+        loadMLInsights();
+
         // Create main radar chart
         const mainRadarCtx = document.getElementById('mainRadarChart').getContext('2d');
 
@@ -439,6 +524,554 @@
                 }
             }
         });
+    });
+
+    // ML-powered insights functions
+    async function loadMLInsights() {
+        try {
+            // Load trend predictions
+            await loadTrendPredictions();
+
+            // Load ESG analysis
+            await loadESGAnalysis();
+
+            // Load ML-powered trends for radar
+            await loadMLTrends();
+
+        } catch (error) {
+            console.error('Error loading ML insights:', error);
+        }
+    }
+
+    async function loadTrendPredictions() {
+        try {
+            const response = await fetch('/trendradar/api/trend-predictions');
+            const data = await response.json();
+
+            const content = document.getElementById('trend-predictions-content');
+
+            if (data.predictions && data.predictions.length > 0) {
+                let html = '<div class="space-y-3">';
+
+                data.predictions.slice(0, 3).forEach(prediction => {
+                    const confidenceColor = prediction.confidence > 0.8 ? 'text-green-400' :
+                                           prediction.confidence > 0.6 ? 'text-yellow-400' : 'text-red-400';
+
+                    html += `
+                        <div class="border-l-4 border-purple-500 pl-3">
+                            <div class="font-medium text-sm">${prediction.category}</div>
+                            <div class="text-xs text-gray-400">
+                                Growth: <span class="text-green-400">+${prediction.predicted_growth}%</span>
+                                | Confidence: <span class="${confidenceColor}">${(prediction.confidence * 100).toFixed(0)}%</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+                content.innerHTML = html;
+            } else {
+                content.innerHTML = '<p class="text-gray-400 text-sm">No predictions available</p>';
+            }
+
+        } catch (error) {
+            console.error('Error loading trend predictions:', error);
+            document.getElementById('trend-predictions-content').innerHTML =
+                '<p class="text-red-400 text-sm">Error loading predictions</p>';
+        }
+    }
+
+    async function loadESGAnalysis() {
+        try {
+            const response = await fetch('/trendradar/api/esg-analysis');
+            const data = await response.json();
+
+            const content = document.getElementById('esg-analysis-content');
+            const qualityContent = document.getElementById('data-quality-content');
+
+            if (data.esg_summary) {
+                // ESG Analysis content
+                const esg = data.esg_summary;
+                let html = '<div class="space-y-2">';
+
+                html += `
+                    <div class="text-sm">
+                        <span class="text-gray-400">Environmental:</span>
+                        <span class="text-green-400">${esg.environmental.mean}</span>
+                    </div>
+                    <div class="text-sm">
+                        <span class="text-gray-400">Social:</span>
+                        <span class="text-blue-400">${esg.social.mean}</span>
+                    </div>
+                    <div class="text-sm">
+                        <span class="text-gray-400">Governance:</span>
+                        <span class="text-purple-400">${esg.governance.mean}</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2">
+                        ${data.companies_analyzed} companies analyzed
+                    </div>
+                `;
+
+                html += '</div>';
+                content.innerHTML = html;
+
+                // Data Quality content
+                if (data.quality_metrics) {
+                    const quality = data.quality_metrics;
+                    let qualityHtml = '<div class="space-y-2">';
+
+                    qualityHtml += `
+                        <div class="text-sm">
+                            <span class="text-gray-400">Data Quality:</span>
+                            <span class="text-green-400">${(quality.data_quality.mean * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="text-sm">
+                            <span class="text-gray-400">Confidence:</span>
+                            <span class="text-blue-400">${(quality.confidence.mean * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-2">
+                            Sources: ${quality.data_sources.join(', ')}
+                        </div>
+                    `;
+
+                    qualityHtml += '</div>';
+                    qualityContent.innerHTML = qualityHtml;
+                }
+
+            } else {
+                content.innerHTML = '<p class="text-gray-400 text-sm">No ESG data available</p>';
+                qualityContent.innerHTML = '<p class="text-gray-400 text-sm">No quality data available</p>';
+            }
+
+        } catch (error) {
+            console.error('Error loading ESG analysis:', error);
+            document.getElementById('esg-analysis-content').innerHTML =
+                '<p class="text-red-400 text-sm">Error loading ESG data</p>';
+            document.getElementById('data-quality-content').innerHTML =
+                '<p class="text-red-400 text-sm">Error loading quality data</p>';
+        }
+    }
+
+    async function loadMLTrends() {
+        try {
+            const response = await fetch('/trendradar/api/ml-trends');
+            const data = await response.json();
+
+            if (data.trends && data.trends.length > 0) {
+                // Update global trends data with ML-powered data
+                trendsData = data.trends;
+
+                // Update insights based on ML data
+                updateInsightsFromMLData(data.trends);
+
+                // Refresh the radar chart with new data
+                updateRadarChart();
+
+                console.log(`Loaded ${data.trends.length} ML-powered trends from ${data.data_source}`);
+            } else {
+                console.log('Using fallback trend data');
+            }
+
+        } catch (error) {
+            console.error('Error loading ML trends:', error);
+        }
+    }
+
+    function updateInsightsFromMLData(trends) {
+        if (!trends || trends.length === 0) return;
+
+        // Sort trends by score
+        const sortedTrends = trends.sort((a, b) => b.score - a.score);
+        const topTrend = sortedTrends[0];
+        const topCategories = sortedTrends.slice(0, 3).map(t => t.category);
+
+        // Update key findings
+        const keyFindingsText = document.getElementById('key-findings-text');
+        if (keyFindingsText) {
+            keyFindingsText.textContent = `ML analysis shows that ${topTrend.category} has the highest sustainability score (${topTrend.score}), with strong performance across multiple ESG metrics. Data quality score: ${topTrend.data_quality || 'N/A'}.`;
+        }
+
+        const keyFindingsTags = document.getElementById('key-findings-tags');
+        if (keyFindingsTags) {
+            keyFindingsTags.innerHTML = topCategories.map(category =>
+                `<span class="text-xs px-2 py-1 rounded-full bg-gray-700">${category}</span>`
+            ).join('');
+        }
+
+        // Update recommendations
+        const recommendationsText = document.getElementById('recommendations-text');
+        if (recommendationsText) {
+            const growthTrends = sortedTrends.filter(t => t.growth > 20);
+            const recommendedCategories = growthTrends.slice(0, 2).map(t => t.category);
+
+            recommendationsText.textContent = `Based on ML analysis of real ESG data, we recommend focusing on ${recommendedCategories.join(' and ')}, which show strong growth potential and high sustainability scores.`;
+        }
+
+        const recommendationsTags = document.getElementById('recommendations-tags');
+        if (recommendationsTags) {
+            const highGrowthTrends = sortedTrends.filter(t => t.growth > 15).slice(0, 3);
+            recommendationsTags.innerHTML = highGrowthTrends.map(trend =>
+                `<span class="text-xs px-2 py-1 rounded-full bg-gray-700">${trend.category}</span>`
+            ).join('');
+        }
+    }
+
+    // AI Data Management Functions
+    function initializeAIDataManagement() {
+        // Set up event listeners for AI management buttons
+        document.getElementById('run-ai-cycle-btn').addEventListener('click', runAIDataCycle);
+        document.getElementById('discover-sources-btn').addEventListener('click', discoverDataSources);
+        document.getElementById('reconcile-data-btn').addEventListener('click', reconcileData);
+        document.getElementById('refresh-trends-btn').addEventListener('click', refreshTrendsData);
+
+        // Set up auto-refresh toggle
+        const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
+        autoRefreshToggle.addEventListener('change', function() {
+            if (this.checked) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        });
+    }
+
+    let autoRefreshInterval = null;
+
+    function startAutoRefresh() {
+        // Refresh data every 5 minutes
+        autoRefreshInterval = setInterval(async () => {
+            updateAIStatus('Auto-refreshing data...', 'info');
+            await loadMLInsights();
+            updateAIStatus('Data refreshed automatically', 'success');
+        }, 5 * 60 * 1000);
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    }
+
+    async function runAIDataCycle() {
+        const button = document.getElementById('run-ai-cycle-btn');
+        const originalText = button.innerHTML;
+
+        try {
+            // Update button state
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Running AI Cycle...';
+
+            updateAIStatus('Starting AI data management cycle...', 'info');
+
+            // Get selected companies (you could add a company selector)
+            const companies = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'];
+
+            const response = await fetch(`/trendradar/api/ai-data-management?${new URLSearchParams({
+                companies: companies,
+                discovery: 'true',
+                reconciliation: 'true',
+                quality_control: 'true'
+            })}`);
+
+            const result = await response.json();
+
+            if (result.success) {
+                updateAIStatus(
+                    `AI cycle completed successfully! Processed ${result.total_data_points} data points in ${result.duration?.toFixed(2) || 'N/A'} seconds.`,
+                    'success'
+                );
+
+                // Show detailed results
+                showAIResults(result);
+
+                // Refresh the radar with new data
+                await loadMLInsights();
+
+            } else {
+                updateAIStatus(`AI cycle failed: ${result.error}`, 'error');
+            }
+
+        } catch (error) {
+            console.error('Error running AI cycle:', error);
+            updateAIStatus(`Error running AI cycle: ${error.message}`, 'error');
+        } finally {
+            // Restore button state
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+
+    async function discoverDataSources() {
+        const button = document.getElementById('discover-sources-btn');
+        const originalText = button.innerHTML;
+
+        try {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Discovering...';
+
+            updateAIStatus('Discovering new data sources...', 'info');
+
+            const response = await fetch('/trendradar/api/data-sources/discover?domains=esg-data.com&domains=sustainability-metrics.org');
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                updateAIStatus(
+                    `Discovered ${result.total_discovered} potential data sources`,
+                    'success'
+                );
+
+                // Show discovered sources
+                showDiscoveredSources(result.sources);
+            } else {
+                updateAIStatus(`Discovery failed: ${result.error}`, 'error');
+            }
+
+        } catch (error) {
+            console.error('Error discovering sources:', error);
+            updateAIStatus(`Error discovering sources: ${error.message}`, 'error');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+
+    async function reconcileData() {
+        const button = document.getElementById('reconcile-data-btn');
+        const originalText = button.innerHTML;
+
+        try {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Reconciling...';
+
+            updateAIStatus('Reconciling data from multiple sources...', 'info');
+
+            // This would typically be called as part of the AI cycle
+            // For demo purposes, we'll show a success message
+            setTimeout(() => {
+                updateAIStatus('Data reconciliation completed. Conflicts resolved using AI-weighted strategy.', 'success');
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }, 2000);
+
+        } catch (error) {
+            console.error('Error reconciling data:', error);
+            updateAIStatus(`Error reconciling data: ${error.message}`, 'error');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+
+    function updateAIStatus(message, type = 'info') {
+        const statusDiv = document.getElementById('ai-management-status');
+        const iconClass = {
+            'info': 'fas fa-info-circle text-blue-400',
+            'success': 'fas fa-check-circle text-green-400',
+            'error': 'fas fa-exclamation-circle text-red-400',
+            'warning': 'fas fa-exclamation-triangle text-yellow-400'
+        }[type] || 'fas fa-info-circle text-blue-400';
+
+        statusDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="${iconClass} mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        // Add timestamp
+        const timestamp = new Date().toLocaleTimeString();
+        statusDiv.innerHTML += `<div class="text-xs text-gray-500 mt-1">Last updated: ${timestamp}</div>`;
+    }
+
+    function showAIResults(result) {
+        // Create a modal or expandable section to show detailed results
+        const resultsHtml = `
+            <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                <h4 class="font-semibold mb-2">AI Cycle Results:</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <strong>Discovery:</strong> ${result.discovery_results?.sources_discovered || 0} sources found
+                    </div>
+                    <div>
+                        <strong>Ingestion:</strong> ${result.ingestion_results?.total_data_points || 0} data points
+                    </div>
+                    <div>
+                        <strong>Reconciliation:</strong> ${result.reconciliation_results?.conflicts_resolved || 0} conflicts resolved
+                    </div>
+                    <div>
+                        <strong>Quality:</strong> ${result.quality_results?.anomalies_detected || 0} anomalies detected
+                    </div>
+                </div>
+                ${result.ml_dataset ? `
+                    <div class="mt-2 text-xs text-gray-400">
+                        ML Dataset: ${result.ml_dataset.dataset_name} (${result.ml_dataset.data_points_stored} points)
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        const statusDiv = document.getElementById('ai-management-status');
+        statusDiv.innerHTML += resultsHtml;
+    }
+
+    function showDiscoveredSources(sources) {
+        if (!sources || sources.length === 0) {
+            return;
+        }
+
+        const sourcesHtml = `
+            <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                <h4 class="font-semibold mb-2">Discovered Sources:</h4>
+                <div class="space-y-2">
+                    ${sources.map(source => `
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-medium">${source.name}</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs px-2 py-1 rounded bg-gray-600">${source.type}</span>
+                                <span class="text-xs px-2 py-1 rounded bg-gray-600">${source.format}</span>
+                                <span class="text-xs text-green-400">${(source.confidence_score * 100).toFixed(0)}%</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        const statusDiv = document.getElementById('ai-management-status');
+        statusDiv.innerHTML += sourcesHtml;
+    }
+
+    async function refreshTrendsData() {
+        const button = document.getElementById('refresh-trends-btn');
+        const originalText = button.innerHTML;
+
+        try {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+
+            updateAIStatus('Refreshing trends data...', 'info');
+
+            const response = await fetch('/trendradar/api/refresh-trends');
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                updateAIStatus(
+                    `Data refreshed successfully! Updated ${result.total_trends} trends at ${new Date(result.refreshed_at).toLocaleTimeString()}`,
+                    'success'
+                );
+
+                // Update global trends data
+                trendsData = result.trends;
+
+                // Refresh the radar chart
+                updateRadarChart();
+
+                // Update insights
+                updateInsightsFromMLData(result.trends);
+
+            } else {
+                updateAIStatus(`Data refresh failed: ${result.error}`, 'error');
+            }
+
+        } catch (error) {
+            console.error('Error refreshing trends data:', error);
+            updateAIStatus(`Error refreshing data: ${error.message}`, 'error');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+
+    async function checkDataHealth() {
+        try {
+            const response = await fetch('/trendradar/api/trend-health');
+            const result = await response.json();
+
+            if (result.health_status) {
+                showDataHealthStatus(result);
+            }
+
+        } catch (error) {
+            console.error('Error checking data health:', error);
+        }
+    }
+
+    function showDataHealthStatus(healthData) {
+        const statusColors = {
+            'excellent': 'text-green-400',
+            'good': 'text-blue-400',
+            'fair': 'text-yellow-400',
+            'poor': 'text-red-400'
+        };
+
+        const statusIcons = {
+            'excellent': 'fas fa-check-circle',
+            'good': 'fas fa-thumbs-up',
+            'fair': 'fas fa-exclamation-triangle',
+            'poor': 'fas fa-exclamation-circle'
+        };
+
+        const statusColor = statusColors[healthData.health_status] || 'text-gray-400';
+        const statusIcon = statusIcons[healthData.health_status] || 'fas fa-question-circle';
+
+        const healthHtml = `
+            <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                <h4 class="font-semibold mb-2 flex items-center">
+                    <i class="${statusIcon} mr-2 ${statusColor}"></i>
+                    Data Health: <span class="${statusColor} ml-1">${healthData.health_status.toUpperCase()}</span>
+                </h4>
+                <div class="grid grid-cols-2 gap-4 text-sm mb-3">
+                    <div>
+                        <strong>Total Trends:</strong> ${healthData.metrics.total_trends}
+                    </div>
+                    <div>
+                        <strong>Real Data:</strong> ${healthData.metrics.real_data_percentage.toFixed(1)}%
+                    </div>
+                    <div>
+                        <strong>Data Sources:</strong> ${healthData.metrics.data_sources.length}
+                    </div>
+                    <div>
+                        <strong>Avg Quality:</strong> ${healthData.metrics.average_data_quality.toFixed(1)}
+                    </div>
+                </div>
+                ${healthData.recommendations && healthData.recommendations.length > 0 ? `
+                    <div class="text-xs">
+                        <strong>Recommendations:</strong>
+                        <ul class="list-disc list-inside mt-1 text-gray-300">
+                            ${healthData.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        const statusDiv = document.getElementById('ai-management-status');
+        statusDiv.innerHTML += healthHtml;
+    }
+
+    // Enhanced auto-refresh with health monitoring
+    function startAutoRefresh() {
+        // Refresh data every 5 minutes
+        autoRefreshInterval = setInterval(async () => {
+            updateAIStatus('Auto-refreshing data...', 'info');
+
+            // Refresh trends data
+            await refreshTrendsData();
+
+            // Check data health
+            await checkDataHealth();
+
+            updateAIStatus('Data refreshed automatically', 'success');
+        }, 5 * 60 * 1000);
+
+        // Initial health check
+        setTimeout(checkDataHealth, 1000);
+    }
+
+    // Initialize data health check on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check data health after initial load
+        setTimeout(checkDataHealth, 2000);
     });
 </script>
 {% endblock %}

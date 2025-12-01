@@ -157,7 +157,7 @@ If the connection is successful, you should see output indicating that the conne
 
 ## Using the Dual Database Adapter
 
-The dual database adapter allows you to write to both Firebase and MongoDB simultaneously. To use it, set the following in your `.env` file:
+The dual database adapter allows you to write to multiple MongoDB instances simultaneously. To use it, set the following in your `.env` file:
 
 ```
 # Database Configuration

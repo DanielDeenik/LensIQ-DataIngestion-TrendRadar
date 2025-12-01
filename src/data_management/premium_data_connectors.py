@@ -14,17 +14,19 @@ from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
 import time
 
+from ..config.production_config import get_config
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
 
 class ESGDataProvider(ABC):
     """Base class for premium ESG data providers"""
-    
+
     def __init__(self, api_key: str, base_url: str, rate_limit: int = 100):
         """
         Initialize ESG data provider.
-        
+
         Args:
             api_key: API key for the provider
             base_url: Base URL for the provider's API
@@ -39,37 +41,37 @@ class ESGDataProvider(ABC):
             'Content-Type': 'application/json',
             'User-Agent': 'TrendSense/1.0'
         })
-        
+
         # Rate limiting
         self.last_request_time = 0
         self.request_interval = 60.0 / rate_limit  # seconds between requests
-    
+
     def _rate_limit(self):
         """Implement rate limiting"""
         current_time = time.time()
         time_since_last = current_time - self.last_request_time
-        
+
         if time_since_last < self.request_interval:
             sleep_time = self.request_interval - time_since_last
             time.sleep(sleep_time)
-        
+
         self.last_request_time = time.time()
-    
+
     def _make_request(self, endpoint: str, params: Dict = None) -> Dict[str, Any]:
         """
         Make a rate-limited request to the API.
-        
+
         Args:
             endpoint: API endpoint
             params: Query parameters
-            
+
         Returns:
             API response data
         """
         self._rate_limit()
-        
+
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
+
         try:
             response = self.session.get(url, params=params)
             response.raise_for_status()
@@ -77,22 +79,22 @@ class ESGDataProvider(ABC):
         except requests.exceptions.RequestException as e:
             logger.error(f"API request failed for {self.__class__.__name__}: {str(e)}")
             raise
-    
+
     @abstractmethod
     def get_company_esg_data(self, company_id: str) -> Dict[str, Any]:
         """Fetch real-time ESG data for a company"""
         pass
-    
+
     @abstractmethod
     def get_regulatory_data(self, framework: str) -> Dict[str, Any]:
         """Fetch regulatory framework data"""
         pass
-    
+
     @abstractmethod
     def search_companies(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Search for companies by name or identifier"""
         pass
-    
+
     @abstractmethod
     def get_industry_benchmarks(self, industry: str) -> Dict[str, Any]:
         """Get industry ESG benchmarks"""
@@ -101,38 +103,61 @@ class ESGDataProvider(ABC):
 
 class RefinitivESGConnector(ESGDataProvider):
     """Refinitiv ESG data connector"""
-    
+
     def __init__(self, api_key: str = None):
-        api_key = api_key or os.getenv('REFINITIV_API_KEY')
+        config = get_config()
+        refinitiv_config = config.get_data_source('refinitiv')
+
+        if refinitiv_config:
+            api_key = api_key or refinitiv_config.api_key
+            base_url = refinitiv_config.base_url
+            rate_limit = refinitiv_config.rate_limit
+        else:
+            api_key = api_key or os.getenv('REFINITIV_API_KEY')
+            base_url = 'https://api.refinitiv.com/data/esg/v1'
+            rate_limit = 60
+
         if not api_key:
             raise ValueError("Refinitiv API key is required")
-        
+
         super().__init__(
             api_key=api_key,
-            base_url='https://api.refinitiv.com/data/esg/v1',
-            rate_limit=60  # 60 requests per minute
+            base_url=base_url,
+            rate_limit=rate_limit
         )
-    
+
+    def get_esg_data(self, company_id: str) -> Dict[str, Any]:
+        """
+        Get ESG data for a company from Refinitiv (standardized interface).
+
+        Args:
+            company_id: Company identifier
+
+        Returns:
+            ESG data dictionary in LensIQ standard format
+        """
+        return self.get_company_esg_data(company_id)
+
     def get_company_esg_data(self, company_id: str) -> Dict[str, Any]:
         """
         Fetch ESG data from Refinitiv.
-        
+
         Args:
             company_id: Company identifier (RIC, ISIN, etc.)
-            
+
         Returns:
             Comprehensive ESG data
         """
         try:
             # Get ESG scores
             scores_data = self._make_request(f'companies/{company_id}/scores')
-            
+
             # Get ESG metrics
             metrics_data = self._make_request(f'companies/{company_id}/metrics')
-            
+
             # Get controversies
             controversies_data = self._make_request(f'companies/{company_id}/controversies')
-            
+
             return {
                 'provider': 'Refinitiv',
                 'company_id': company_id,
@@ -162,7 +187,7 @@ class RefinitivESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching Refinitiv ESG data for {company_id}: {str(e)}")
             return self._get_fallback_data(company_id)
-    
+
     def get_regulatory_data(self, framework: str) -> Dict[str, Any]:
         """Fetch regulatory framework data"""
         try:
@@ -170,7 +195,7 @@ class RefinitivESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching regulatory data for {framework}: {str(e)}")
             return {}
-    
+
     def search_companies(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Search for companies"""
         try:
@@ -179,7 +204,7 @@ class RefinitivESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error searching companies: {str(e)}")
             return []
-    
+
     def get_industry_benchmarks(self, industry: str) -> Dict[str, Any]:
         """Get industry ESG benchmarks"""
         try:
@@ -187,7 +212,7 @@ class RefinitivESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching industry benchmarks for {industry}: {str(e)}")
             return {}
-    
+
     def _get_fallback_data(self, company_id: str) -> Dict[str, Any]:
         """Provide fallback data when API fails"""
         return {
@@ -214,24 +239,36 @@ class RefinitivESGConnector(ESGDataProvider):
 
 class BloombergESGConnector(ESGDataProvider):
     """Bloomberg ESG data connector"""
-    
+
     def __init__(self, api_key: str = None):
         api_key = api_key or os.getenv('BLOOMBERG_API_KEY')
         if not api_key:
             raise ValueError("Bloomberg API key is required")
-        
+
         super().__init__(
             api_key=api_key,
             base_url='https://api.bloomberg.com/esg/v1',
             rate_limit=120  # 120 requests per minute
         )
-    
+
+    def get_esg_data(self, company_id: str) -> Dict[str, Any]:
+        """
+        Get ESG data for a company from Bloomberg (standardized interface).
+
+        Args:
+            company_id: Company identifier
+
+        Returns:
+            ESG data dictionary in LensIQ standard format
+        """
+        return self.get_company_esg_data(company_id)
+
     def get_company_esg_data(self, company_id: str) -> Dict[str, Any]:
         """Fetch ESG data from Bloomberg"""
         try:
             # Bloomberg uses different endpoint structure
             data = self._make_request(f'companies/{company_id}/esg-scores')
-            
+
             return {
                 'provider': 'Bloomberg',
                 'company_id': company_id,
@@ -260,7 +297,7 @@ class BloombergESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching Bloomberg ESG data for {company_id}: {str(e)}")
             return self._get_fallback_data(company_id)
-    
+
     def get_regulatory_data(self, framework: str) -> Dict[str, Any]:
         """Fetch regulatory framework data"""
         try:
@@ -268,7 +305,7 @@ class BloombergESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching regulatory data for {framework}: {str(e)}")
             return {}
-    
+
     def search_companies(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Search for companies"""
         try:
@@ -277,7 +314,7 @@ class BloombergESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error searching companies: {str(e)}")
             return []
-    
+
     def get_industry_benchmarks(self, industry: str) -> Dict[str, Any]:
         """Get industry ESG benchmarks"""
         try:
@@ -285,7 +322,7 @@ class BloombergESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching industry benchmarks for {industry}: {str(e)}")
             return {}
-    
+
     def _get_fallback_data(self, company_id: str) -> Dict[str, Any]:
         """Provide fallback data when API fails"""
         return {
@@ -311,23 +348,23 @@ class BloombergESGConnector(ESGDataProvider):
 
 class MSCIESGConnector(ESGDataProvider):
     """MSCI ESG data connector"""
-    
+
     def __init__(self, api_key: str = None):
         api_key = api_key or os.getenv('MSCI_API_KEY')
         if not api_key:
             raise ValueError("MSCI API key is required")
-        
+
         super().__init__(
             api_key=api_key,
             base_url='https://api.msci.com/esg/v1',
             rate_limit=100  # 100 requests per minute
         )
-    
+
     def get_company_esg_data(self, company_id: str) -> Dict[str, Any]:
         """Fetch ESG data from MSCI"""
         try:
             data = self._make_request(f'companies/{company_id}/ratings')
-            
+
             return {
                 'provider': 'MSCI',
                 'company_id': company_id,
@@ -351,7 +388,7 @@ class MSCIESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching MSCI ESG data for {company_id}: {str(e)}")
             return self._get_fallback_data(company_id)
-    
+
     def get_regulatory_data(self, framework: str) -> Dict[str, Any]:
         """Fetch regulatory framework data"""
         try:
@@ -359,7 +396,7 @@ class MSCIESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching regulatory data for {framework}: {str(e)}")
             return {}
-    
+
     def search_companies(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Search for companies"""
         try:
@@ -368,7 +405,7 @@ class MSCIESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error searching companies: {str(e)}")
             return []
-    
+
     def get_industry_benchmarks(self, industry: str) -> Dict[str, Any]:
         """Get industry ESG benchmarks"""
         try:
@@ -376,7 +413,7 @@ class MSCIESGConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching industry benchmarks for {industry}: {str(e)}")
             return {}
-    
+
     def _get_fallback_data(self, company_id: str) -> Dict[str, Any]:
         """Provide fallback data when API fails"""
         return {
@@ -404,23 +441,23 @@ class MSCIESGConnector(ESGDataProvider):
 
 class SustainalyticsConnector(ESGDataProvider):
     """Sustainalytics ESG data connector"""
-    
+
     def __init__(self, api_key: str = None):
         api_key = api_key or os.getenv('SUSTAINALYTICS_API_KEY')
         if not api_key:
             raise ValueError("Sustainalytics API key is required")
-        
+
         super().__init__(
             api_key=api_key,
             base_url='https://api.sustainalytics.com/v1',
             rate_limit=80  # 80 requests per minute
         )
-    
+
     def get_company_esg_data(self, company_id: str) -> Dict[str, Any]:
         """Fetch ESG data from Sustainalytics"""
         try:
             data = self._make_request(f'companies/{company_id}/esg-risk')
-            
+
             return {
                 'provider': 'Sustainalytics',
                 'company_id': company_id,
@@ -446,7 +483,7 @@ class SustainalyticsConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching Sustainalytics ESG data for {company_id}: {str(e)}")
             return self._get_fallback_data(company_id)
-    
+
     def get_regulatory_data(self, framework: str) -> Dict[str, Any]:
         """Fetch regulatory framework data"""
         try:
@@ -454,7 +491,7 @@ class SustainalyticsConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching regulatory data for {framework}: {str(e)}")
             return {}
-    
+
     def search_companies(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Search for companies"""
         try:
@@ -463,7 +500,7 @@ class SustainalyticsConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error searching companies: {str(e)}")
             return []
-    
+
     def get_industry_benchmarks(self, industry: str) -> Dict[str, Any]:
         """Get industry ESG benchmarks"""
         try:
@@ -471,7 +508,7 @@ class SustainalyticsConnector(ESGDataProvider):
         except Exception as e:
             logger.error(f"Error fetching industry benchmarks for {industry}: {str(e)}")
             return {}
-    
+
     def _get_fallback_data(self, company_id: str) -> Dict[str, Any]:
         """Provide fallback data when API fails"""
         return {
@@ -501,25 +538,25 @@ class SustainalyticsConnector(ESGDataProvider):
 
 class MockPremiumESGConnector(ESGDataProvider):
     """Mock premium ESG connector for development/testing"""
-    
+
     def __init__(self):
         super().__init__(
             api_key='mock_key',
             base_url='https://mock.esg.api',
             rate_limit=1000
         )
-    
+
     def get_company_esg_data(self, company_id: str) -> Dict[str, Any]:
         """Generate realistic mock ESG data"""
         import random
-        
+
         # Generate realistic scores with some correlation
         base_score = random.randint(40, 90)
         env_score = max(0, min(100, base_score + random.randint(-15, 15)))
         social_score = max(0, min(100, base_score + random.randint(-10, 10)))
         gov_score = max(0, min(100, base_score + random.randint(-12, 12)))
         combined_score = (env_score + social_score + gov_score) / 3
-        
+
         return {
             'provider': 'Mock Premium',
             'company_id': company_id,
@@ -546,7 +583,7 @@ class MockPremiumESGConnector(ESGDataProvider):
             },
             'is_mock': True
         }
-    
+
     def get_regulatory_data(self, framework: str) -> Dict[str, Any]:
         """Generate mock regulatory data"""
         return {
@@ -558,7 +595,7 @@ class MockPremiumESGConnector(ESGDataProvider):
             ],
             'is_mock': True
         }
-    
+
     def search_companies(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Generate mock company search results"""
         companies = []
@@ -571,11 +608,11 @@ class MockPremiumESGConnector(ESGDataProvider):
                 'is_mock': True
             })
         return companies
-    
+
     def get_industry_benchmarks(self, industry: str) -> Dict[str, Any]:
         """Generate mock industry benchmarks"""
         import random
-        
+
         return {
             'industry': industry,
             'benchmarks': {
@@ -587,7 +624,7 @@ class MockPremiumESGConnector(ESGDataProvider):
             'sample_size': random.randint(50, 200),
             'is_mock': True
         }
-    
+
     def _make_request(self, endpoint: str, params: Dict = None) -> Dict[str, Any]:
         """Override to avoid actual HTTP requests"""
         return {'mock': True, 'endpoint': endpoint, 'params': params}
@@ -596,10 +633,10 @@ class MockPremiumESGConnector(ESGDataProvider):
 def get_premium_data_connector(provider: str = None) -> ESGDataProvider:
     """
     Get a premium ESG data connector.
-    
+
     Args:
         provider: Provider name ('refinitiv', 'bloomberg', 'msci', 'sustainalytics', 'mock')
-        
+
     Returns:
         ESG data provider instance
     """
@@ -611,7 +648,7 @@ def get_premium_data_connector(provider: str = None) -> ESGDataProvider:
         'sustainalytics': {'env_var': 'SUSTAINALYTICS_API_KEY', 'class': SustainalyticsConnector},
         'mock': {'env_var': None, 'class': MockPremiumESGConnector}
     }
-    
+
     # If provider is not specified, try to determine from environment
     if provider is None:
         for prov_name, config in provider_map.items():
@@ -620,9 +657,9 @@ def get_premium_data_connector(provider: str = None) -> ESGDataProvider:
                 break
         else:  # No environment variables found
             provider = 'mock'
-    
+
     provider = provider.lower()
-    
+
     # Get the provider class from the map
     if provider in provider_map:
         try:

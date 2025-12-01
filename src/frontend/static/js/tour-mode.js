@@ -120,32 +120,15 @@ class TourMode {
      * Check if user has completed the tour
      */
     checkUserCompletionStatus() {
-        // Try to get completion status from Firebase if user is authenticated
-        if (window.firebase && window.firebase.auth().currentUser) {
-            this.getFirebaseCompletionStatus();
-        } else {
-            // Fallback to localStorage for non-authenticated users
-            this.getLocalStorageCompletionStatus();
-        }
+        // Get completion status from localStorage
+        this.getLocalStorageCompletionStatus();
     }
 
     /**
-     * Get tour completion status from Firebase
+     * Get tour completion status from localStorage
      */
-    getFirebaseCompletionStatus() {
-        const userId = window.firebase.auth().currentUser.uid;
-        window.firebase.database().ref(`users/${userId}/tourCompleted`).once('value')
-            .then(snapshot => {
-                const completed = snapshot.val();
-                if (completed) {
-                    this.handleTourCompleted();
-                }
-            })
-            .catch(error => {
-                console.error('Error getting tour completion status from Firebase:', error);
-                // Fallback to localStorage
-                this.getLocalStorageCompletionStatus();
-            });
+    getCompletionStatus() {
+        this.getLocalStorageCompletionStatus();
     }
 
     /**
@@ -351,19 +334,8 @@ class TourMode {
      * Store tour completion status
      */
     storeTourCompletionStatus() {
-        // Store in Firebase if user is authenticated
-        if (window.firebase && window.firebase.auth().currentUser) {
-            const userId = window.firebase.auth().currentUser.uid;
-            window.firebase.database().ref(`users/${userId}/tourCompleted`).set(true)
-                .catch(error => {
-                    console.error('Error storing tour completion status in Firebase:', error);
-                    // Fallback to localStorage
-                    localStorage.setItem('tourCompleted', 'true');
-                });
-        } else {
-            // Fallback to localStorage for non-authenticated users
-            localStorage.setItem('tourCompleted', 'true');
-        }
+        // Store completion status in localStorage
+        localStorage.setItem('tourCompleted', 'true');
 
         // Hide toggle button unless manually enabled
         if (this.toggleButton && !this.isManuallyEnabled()) {

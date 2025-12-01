@@ -33,9 +33,9 @@ def app():
     app.config.update({
         'TESTING': True,
         'SECRET_KEY': 'test-secret-key',
-        'DATABASE_ADAPTER': 'mock_firebase',
+        'DATABASE_ADAPTER': 'mongodb',
         'MONGODB_URI': 'mongodb://localhost:27017/test_trendsense',
-        'FIREBASE_PROJECT_ID': 'test-project',
+
         'TEST_DATA_DIR': test_dir
     })
 
@@ -74,16 +74,6 @@ def mock_mongodb_service():
         mock.return_value = mock_instance
         yield mock_instance
 
-@pytest.fixture
-def mock_firebase_service():
-    """Mock Firebase service for testing."""
-    with patch('src.database.adapters.firebase_adapter.FirebaseAdapter') as mock:
-        mock_instance = MagicMock()
-        mock_instance.connect.return_value = True
-        mock_instance.is_connected.return_value = True
-        mock_instance.get_collection.return_value = MagicMock()
-        mock.return_value = mock_instance
-        yield mock_instance
 
 @pytest.fixture
 def sample_trends_data():

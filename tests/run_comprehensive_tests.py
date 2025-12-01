@@ -27,7 +27,7 @@ def run_command(command, description):
     """Run a command and return the result."""
     logger.info(f"Running: {description}")
     logger.info(f"Command: {' '.join(command)}")
-    
+
     try:
         result = subprocess.run(
             command,
@@ -35,7 +35,7 @@ def run_command(command, description):
             text=True,
             cwd=project_root
         )
-        
+
         if result.returncode == 0:
             logger.info(f"✓ {description} completed successfully")
             if result.stdout:
@@ -45,9 +45,9 @@ def run_command(command, description):
             logger.error(f"Error: {result.stderr}")
             if result.stdout:
                 logger.error(f"Output: {result.stdout}")
-        
+
         return result.returncode == 0, result.stdout, result.stderr
-    
+
     except Exception as e:
         logger.error(f"✗ Failed to run {description}: {str(e)}")
         return False, "", str(e)
@@ -55,7 +55,7 @@ def run_command(command, description):
 def clean_cache():
     """Clean Python cache files."""
     logger.info("Cleaning Python cache files...")
-    
+
     # Remove __pycache__ directories
     for root, dirs, files in os.walk(project_root):
         for dir_name in dirs[:]:  # Use slice to avoid modifying list while iterating
@@ -67,7 +67,7 @@ def clean_cache():
                     logger.info(f"Removed: {cache_path}")
                 except Exception as e:
                     logger.warning(f"Could not remove {cache_path}: {e}")
-    
+
     # Remove .pyc files
     for root, dirs, files in os.walk(project_root):
         for file_name in files:
@@ -82,7 +82,7 @@ def clean_cache():
 def install_dependencies():
     """Install test dependencies."""
     logger.info("Installing test dependencies...")
-    
+
     dependencies = [
         'pytest>=7.0.0',
         'pytest-cov>=4.0.0',
@@ -90,7 +90,7 @@ def install_dependencies():
         'pytest-mock>=3.10.0',
         'coverage>=7.0.0'
     ]
-    
+
     for dep in dependencies:
         success, stdout, stderr = run_command(
             [sys.executable, '-m', 'pip', 'install', dep],
@@ -106,7 +106,7 @@ def run_unit_tests():
         'test_database_adapters.py',
         'test_vc_lens_comprehensive.py'
     ]
-    
+
     for test_file in test_files:
         test_path = project_root / 'tests' / test_file
         if test_path.exists():
@@ -147,7 +147,7 @@ def run_all_tests_with_coverage():
 def generate_test_report():
     """Generate a comprehensive test report."""
     logger.info("Generating test report...")
-    
+
     # Run tests with JUnit XML output
     success, stdout, stderr = run_command(
         [
@@ -161,13 +161,13 @@ def generate_test_report():
         ],
         "Generating test report"
     )
-    
+
     if success:
         logger.info("Test report generated successfully")
         logger.info("Coverage report: htmlcov/index.html")
         logger.info("JUnit XML: test-results.xml")
         logger.info("Coverage XML: coverage.xml")
-    
+
     return success
 
 def main():
@@ -180,33 +180,33 @@ def main():
     parser.add_argument('--coverage', action='store_true', help='Run tests with coverage')
     parser.add_argument('--report', action='store_true', help='Generate comprehensive test report')
     parser.add_argument('--all', action='store_true', help='Run all tests and generate reports')
-    
+
     args = parser.parse_args()
-    
+
     # Default to running all if no specific option is provided
     if not any([args.unit_only, args.integration_only, args.coverage, args.report]):
         args.all = True
-    
+
     logger.info("Starting TrendSense comprehensive test suite")
     logger.info(f"Project root: {project_root}")
-    
+
     # Clean cache if requested
     if args.clean or args.all:
         clean_cache()
-    
+
     # Install dependencies if requested
     if args.install_deps or args.all:
         install_dependencies()
-    
+
     # Set environment variables for testing
     os.environ.update({
         'FLASK_ENV': 'testing',
-        'DATABASE_ADAPTER': 'mock_firebase',
+        'DATABASE_ADAPTER': 'mongodb',
         'TESTING': 'True'
     })
-    
+
     success = True
-    
+
     # Run tests based on arguments
     if args.unit_only:
         run_unit_tests()
@@ -216,7 +216,7 @@ def main():
         success = run_all_tests_with_coverage()
     elif args.report or args.all:
         success = generate_test_report()
-    
+
     if success:
         logger.info("✓ All tests completed successfully!")
         return 0

@@ -89,26 +89,7 @@ class TestComprehensive(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_find.assert_called()
 
-    # Firebase Integration Tests
-    @patch('src.database.adapters.firebase_adapter.FirebaseAdapter.connect')
-    @patch('src.database.adapters.firebase_adapter.FirebaseAdapter.find')
-    def test_firebase_integration(self, mock_find, mock_connect):
-        """Test Firebase integration."""
-        # Mock Firebase connection
-        mock_connect.return_value = True
 
-        # Mock Firebase find method
-        mock_find.return_value = [
-            {"id": "test-trend", "name": "Test Trend", "strength": 85}
-        ]
-
-        # Test route that uses Firebase
-        response = self.app.get('/trendsense')
-        self.assertEqual(response.status_code, 200)
-
-        # Verify Firebase methods were called
-        mock_connect.assert_called_once()
-        mock_find.assert_called()
 
     # TourMode Integration Tests
     def test_tourmode_integration(self):

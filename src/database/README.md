@@ -11,7 +11,6 @@ The database adapter system uses the adapter pattern to abstract away the detail
 - `adapters/`: Contains the database adapters
   - `base_adapter.py`: Defines the interface for database adapters
   - `mongodb_adapter.py`: MongoDB adapter implementation
-  - `firebase_adapter.py`: Firebase adapter implementation
 - `database_service.py`: Provides a unified database service
 - `db_manager.py`: Provides a database manager that uses the database service
 - `migration_utils.py`: Utilities for migrating data between database backends
@@ -23,13 +22,11 @@ The database adapter system uses the adapter pattern to abstract away the detail
 
 The database adapter system is configured using environment variables. The following variables are used:
 
-- `DATABASE_ADAPTER`: The database adapter to use (`mongodb` or `firebase`)
+- `DATABASE_ADAPTER`: The database adapter to use (`mongodb`)
 - `MONGODB_URI`: MongoDB connection URI
 - `MONGODB_DATABASE`: MongoDB database name
 - `MONGODB_USERNAME`: MongoDB username
 - `MONGODB_PASSWORD`: MongoDB password
-- `FIREBASE_CREDENTIALS_PATH`: Path to Firebase credentials JSON file
-- `FIREBASE_PROJECT_ID`: Firebase project ID
 
 ### Using the Database Manager
 
@@ -65,13 +62,13 @@ db_manager.disconnect()
 The migration utilities can be used to migrate data between database backends:
 
 ```python
-from src.database.migration_utils import migrate_mongodb_to_firebase
+from src.database.migration_utils import export_mongodb_to_json
 
-# Migrate all collections from MongoDB to Firebase
-migrate_mongodb_to_firebase()
+# Export all collections from MongoDB to JSON
+export_mongodb_to_json()
 
-# Migrate specific collections
-migrate_mongodb_to_firebase(['users', 'products'])
+# Export specific collections
+export_mongodb_to_json(['users', 'products'])
 ```
 
 ### Command-Line Interface
@@ -79,20 +76,11 @@ migrate_mongodb_to_firebase(['users', 'products'])
 The command-line interface provides a way to perform database operations from the command line:
 
 ```bash
-# Set up Firebase
-python -m src.database.db_cli setup --adapter firebase
-
 # Test database connection
-python -m src.database.db_cli test --adapter firebase
+python -m src.database.db_cli test
 
 # Export MongoDB to JSON
 python -m src.database.db_cli export --collections users products
-
-# Import JSON to Firebase
-python -m src.database.db_cli import --input-dir data_export
-
-# Migrate MongoDB to Firebase
-python -m src.database.db_cli migrate --collections users products
 ```
 
 ## Switching Between Database Backends
@@ -102,30 +90,13 @@ To switch between database backends, set the `DATABASE_ADAPTER` environment vari
 ```bash
 # Use MongoDB
 export DATABASE_ADAPTER=mongodb
-
-# Use Firebase
-export DATABASE_ADAPTER=firebase
 ```
 
 Alternatively, you can update the `.env` file:
 
 ```
-DATABASE_ADAPTER=firebase
+DATABASE_ADAPTER=mongodb
 ```
-
-## Firebase Setup
-
-To use Firebase as a database backend, you need to:
-
-1. Create a Firebase project at https://console.firebase.google.com/
-2. Enable Firestore in the project
-3. Generate a service account key:
-   - Go to Project Settings > Service Accounts
-   - Click "Generate new private key"
-   - Save the JSON file
-4. Set the `FIREBASE_CREDENTIALS_PATH` environment variable to the path of the JSON file
-5. Set the `FIREBASE_PROJECT_ID` environment variable to your Firebase project ID
-6. Install the Firebase Admin SDK: `pip install firebase-admin`
 
 ## MongoDB Setup
 

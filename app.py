@@ -33,6 +33,13 @@ except ImportError:
     def health_check():
         return jsonify({'status': 'ok', 'message': 'LensIQ API'})
 
+# Import secure API blueprint
+try:
+    from src.frontend.routes.secure_api import secure_api_bp
+except ImportError:
+    logger.warning("Secure API blueprint not available")
+    secure_api_bp = None
+
 # Main route: Storytelling (LensIQ)
 try:
     from src.frontend.routes.lensiq import lensiq_bp
@@ -76,21 +83,43 @@ except ImportError:
 
 def create_app():
     """Create and configure the Flask application."""
+    # Import production config
+    from src.config.production_config import get_config
+
+    # Get configuration
+    config = get_config()
+
     # Get the absolute path to the templates and static directories
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'src', 'frontend', 'templates'))
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'src', 'frontend', 'static'))
 
     logger.info(f"Template directory: {template_dir}")
     logger.info(f"Static directory: {static_dir}")
+    logger.info(f"Environment: {config.environment}")
 
     # Initialize Flask app with custom template and static folders
     app = Flask(__name__,
                 template_folder=template_dir,
                 static_folder=static_dir)
 
-    # Configure app
-    app.secret_key = os.getenv('SECRET_KEY', 'lensiq-secret-key')
-    app.config['DEBUG'] = os.getenv('DEBUG', 'True').lower() == 'true'
+    # Configure app with production settings
+    app.secret_key = config.security.secret_key
+    app.config['DEBUG'] = config.environment == 'development'
+    app.config['TESTING'] = config.environment == 'testing'
+
+    # Security configuration
+    app.config['SESSION_COOKIE_SECURE'] = config.environment == 'production'
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['PERMANENT_SESSION_LIFETIME'] = config.security.session_timeout
+
+    # File upload configuration
+    app.config['MAX_CONTENT_LENGTH'] = config.storage.max_file_size
+
+    # API configuration
+    app.config['API_VERSION'] = config.api.version
+    app.config['RATE_LIMIT_PER_MINUTE'] = config.api.rate_limit_per_minute
+    app.config['RATE_LIMIT_PER_HOUR'] = config.api.rate_limit_per_hour
 
     return app
 
@@ -174,6 +203,10 @@ blueprints_to_register = [
     (trendradar_bp, '/trends', 'Trends (TrendRadar)')
 ]
 
+# Add secure API blueprint if available
+if secure_api_bp:
+    blueprints_to_register.append((secure_api_bp, '/api/v1', 'Secure API v1'))
+
 for blueprint, url_prefix, name in blueprints_to_register:
     try:
         # Check if blueprint already has a url_prefix defined
@@ -203,6 +236,28 @@ for blueprint, url_prefix, name in blueprints_to_register:
 logger.info("Registered blueprints:")
 for blueprint in app.blueprints:
     logger.info(f"- {blueprint}: {app.blueprints[blueprint].url_prefix}")
+
+# Initialize production systems
+try:
+    from src.data_management.petastorm_pipeline import get_ml_pipeline
+    from src.monitoring.health_check import get_health_checker
+    from src.auth.production_auth import get_auth
+
+    # Initialize ML pipeline
+    ml_pipeline = get_ml_pipeline()
+    logger.info("ML pipeline initialized successfully")
+
+    # Initialize health checker
+    health_checker = get_health_checker()
+    logger.info("Health monitoring initialized successfully")
+
+    # Initialize authentication
+    auth_system = get_auth()
+    logger.info("Authentication system initialized successfully")
+
+except Exception as e:
+    logger.error(f"Failed to initialize production systems: {e}")
+    # Continue without production systems for development
 
 # Error handlers
 @app.errorhandler(404)
